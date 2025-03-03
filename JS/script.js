@@ -20,7 +20,9 @@ function secondsToMinutesSeconds(seconds) {
     return `${formattedMinutes}:${formattedSeconds}`;
 }
 
+const basePath = window.location.hostname === 'localhost' ? '' : '/your-repo-name';
 async function getSongs(folder) {
+    const response = await fetch(`${basePath}/${folder}/`);
     // try {
     //     const response = await fetch(`${folder}/`);
 
