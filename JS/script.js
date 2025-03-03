@@ -103,6 +103,21 @@ async function displayAlbums() {
                 folder: "Softmusic",
                 title: "Soft Music",
                 description: "Relaxing tunes"
+            },
+            {
+                folder: "Recharge",
+                title: "Recharge",
+                description: "Active"
+            },
+            {
+                folder: "Memories",
+                title: "Memories",
+                description: "Good vibes"
+            },
+            {
+                folder: "Lovely songs",
+                title: "Lovely songs",
+                description: "Feel good"
             }
             // Add more albums as needed
         ];
