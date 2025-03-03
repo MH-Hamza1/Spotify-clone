@@ -20,24 +20,8 @@ function secondsToMinutesSeconds(seconds) {
     return `${formattedMinutes}:${formattedSeconds}`;
 }
 
-const basePath = window.location.hostname === 'localhost' ? '' : '/your-repo-name';
 async function getSongs(folder) {
-    const response = await fetch(`${basePath}/${folder}/`);
-    // try {
-    //     const response = await fetch(`${folder}/`);
-
-    //     // Check if response is successful (status 200-299)
-    //     if (!response.ok) {
-    //         throw new Error(`HTTP error! status: ${response.status}`);
-    //     }
-
-    //     const text = await response.text();
-    //     let div = document.createElement("div");
-    //     div.innerHTML = text;
-    //     let as = div.getElementsByTagName("a")
-    //     songs = []
     try {
-        // Add trailing slash and verify path
         const normalizedFolder = folder.endsWith('/') ? folder : `${folder}/`;
         const response = await fetch(normalizedFolder);
 
@@ -49,21 +33,9 @@ async function getSongs(folder) {
         const links = doc.querySelectorAll('a[href$=".mp3"]');
 
         songs = Array.from(links).map(link => {
-            // Proper URL handling
             const url = new URL(link.href, window.location.href);
             return decodeURIComponent(url.pathname.split('/').pop());
         });
-        for (let index = 0; index < as.length; index++) {
-            const element = as[index];
-            if (element.href.endsWith(".mp3")) {
-                try {
-                    const fileName = new URL(element.href).pathname.split('/').pop();
-                    songs.push(decodeURIComponent(fileName));
-                } catch (e) {
-                    console.error('Error processing song URL:', e);
-                }
-            }
-        }
 
         // Show all the songs in the playlist
         let songUL = document.querySelector(".songlist").getElementsByTagName("ul")[0]
@@ -162,7 +134,7 @@ async function displayAlbums() {
                     <path d="M15.4531 12.3948C15.3016 13.0215 14.5857 13.4644 13.1539 14.3502C11.7697 15.2064 11.0777 15.6346 10.5199 15.4625C10.2893 15.3913 10.0793 15.2562 9.90982 15.07C9.5 14.6198 9.5 13.7465 9.5 12C9.5 10.2535 9.5 9.38018 9.90982 8.92995C10.0793 8.74381 10.2893 8.60868 10.5199 8.53753C11.0777 8.36544 11.7697 8.79357 13.1539 9.64983C14.5857 10.5356 15.3016 10.9785 15.4531 11.6052C15.5156 11.8639 15.5156 12.1361 15.4531 12.3948Z" stroke="" stroke-width="1.5" stroke-linejoin="round" />
                     </svg>
                 </div>
-                <img src="songs/${folder}/cover.jpg" alt="${response.title}">
+                <img src="songs/${album.folder}/cover.jpg" alt="${info.title}">
                 <h2>${info.title}</h2>
                 <p>${info.description}</p>
             `;
@@ -177,11 +149,12 @@ async function displayAlbums() {
 }
 
 async function main() {
+    let currentSongIndex = -1; // Declare here for proper scoping
+    
     await getSongs("songs/Softmusic");
-    if (songs.length > 0) {
+    if (songs && songs.length > 0) {
         playMusic(songs[0], true);
-        // Initialize currentSongIndex here
-        let currentSongIndex = 0; // Direct index access is safer
+        currentSongIndex = 0; // Update the existing variable
     } else {
         console.error("No songs found!");
         document.querySelector(".songinfo").innerHTML = "No songs found in playlist";
@@ -206,7 +179,7 @@ async function main() {
     // Display all the albums on the page
     displayAlbums()
 
-    let currentSongIndex = songs.indexOf(currentSong.src.split("/").slice(-1)[0]);
+    // let currentSongIndex = songs.indexOf(currentSong.src.split("/").slice(-1)[0]);
 
     // Attach an event listener to play, next and previous
     play.addEventListener("click", () => {
