@@ -39,12 +39,12 @@ async function getSongs(folder) {
         });
 
         // Show all the songs in the playlist
-        let songUL = document.querySelector(".songlist").getElementsByTagName("ul")[0]
-        // let songUL = document.querySelector(".songlist ul");
-        // if (!songUL) {
-        //     console.error("Song list container not found");
-        //     return;
-        // }
+        // let songUL = document.querySelector(".songlist").getElementsByTagName("ul")[0]
+        let songUL = document.querySelector(".songlist ul");
+        if (!songUL) {
+            console.error("Song list container not found");
+            return;
+        }
         songUL.innerHTML = ""
         for (const song of songs) {
             songUL.innerHTML = songUL.innerHTML + `<li> <img class="invert" src="/Svg/music.svg" alt="">
