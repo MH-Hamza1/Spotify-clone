@@ -1,4 +1,9 @@
 {
     "title": "Soft music",
-    "description": "Soft songs"
+    "description": "Soft songs",
+    "cover": "cover.jpg",
+    "tracks": [
+        "Cardigan - Taylor Swift.mp3",
+        "I've got my eye on you.mp3"
+    ]
 }
