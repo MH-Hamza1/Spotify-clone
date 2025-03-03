@@ -149,7 +149,7 @@ async function displayAlbums() {
 }
 
 async function main() {
-    // let currentSongIndex = -1; // Declare here for proper scoping
+    let currentSongIndex = -1; // Declare here for proper scoping
     
     await getSongs("songs/Softmusic");
     if (songs && songs.length > 0) {
@@ -179,7 +179,7 @@ async function main() {
     // Display all the albums on the page
     displayAlbums()
 
-    let currentSongIndex = songs.indexOf(currentSong.src.split("/").slice(-1)[0]);
+    // let currentSongIndex = songs.indexOf(currentSong.src.split("/").slice(-1)[0]);
 
     // Attach an event listener to play, next and previous
     play.addEventListener("click", () => {
