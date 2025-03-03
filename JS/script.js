@@ -21,36 +21,36 @@ function secondsToMinutesSeconds(seconds) {
 }
 
 async function getSongs(folder) {
-    // try {
-    //     const response = await fetch(`${folder}/`);
-
-    //     // Check if response is successful (status 200-299)
-    //     if (!response.ok) {
-    //         throw new Error(`HTTP error! status: ${response.status}`);
-    //     }
-
-    //     const text = await response.text();
-    //     let div = document.createElement("div");
-    //     div.innerHTML = text;
-    //     let as = div.getElementsByTagName("a")
-    //     songs = []
     try {
-        // Add trailing slash and verify path
-        const normalizedFolder = folder.endsWith('/') ? folder : `${folder}/`;
-        const response = await fetch(normalizedFolder);
+        const response = await fetch(`${folder}/`);
 
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        // Check if response is successful (status 200-299)
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
         const text = await response.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(text, 'text/html');
-        const links = doc.querySelectorAll('a[href$=".mp3"]');
+        let div = document.createElement("div");
+        div.innerHTML = text;
+        let as = div.getElementsByTagName("a")
+        songs = []
+    // try {
+    //     // Add trailing slash and verify path
+    //     const normalizedFolder = folder.endsWith('/') ? folder : `${folder}/`;
+    //     const response = await fetch(normalizedFolder);
 
-        songs = Array.from(links).map(link => {
-            // Proper URL handling
-            const url = new URL(link.href, window.location.href);
-            return decodeURIComponent(url.pathname.split('/').pop());
-        });
+    //     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+    //     const text = await response.text();
+    //     const parser = new DOMParser();
+    //     const doc = parser.parseFromString(text, 'text/html');
+    //     const links = doc.querySelectorAll('a[href$=".mp3"]');
+
+    //     songs = Array.from(links).map(link => {
+    //         // Proper URL handling
+    //         const url = new URL(link.href, window.location.href);
+    //         return decodeURIComponent(url.pathname.split('/').pop());
+    //     });
         for (let index = 0; index < as.length; index++) {
             const element = as[index];
             if (element.href.endsWith(".mp3")) {
@@ -184,6 +184,22 @@ async function main() {
         console.error("No songs found!");
         document.querySelector(".songinfo").innerHTML = "No songs found in playlist";
     }
+
+    async function verifyFiles() {
+        try {
+            const testImage = await fetch('songs/Softmusic/cover.jpg');
+            if (!testImage.ok) throw new Error('Cover image missing');
+            
+            const testSong = await fetch('songs/Softmusic/' + songs[0]);
+            if (!testSong.ok) throw new Error('First song missing');
+            
+            console.log('All files verified');
+        } catch (error) {
+            console.error('File verification failed:', error);
+        }
+    }
+    // Call it after getSongs()
+    await verifyFiles();
 
     // Display all the albums on the page
     displayAlbums()
