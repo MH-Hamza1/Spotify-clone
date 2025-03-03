@@ -21,19 +21,36 @@ function secondsToMinutesSeconds(seconds) {
 }
 
 async function getSongs(folder) {
+    // try {
+    //     const response = await fetch(`${folder}/`);
+
+    //     // Check if response is successful (status 200-299)
+    //     if (!response.ok) {
+    //         throw new Error(`HTTP error! status: ${response.status}`);
+    //     }
+
+    //     const text = await response.text();
+    //     let div = document.createElement("div");
+    //     div.innerHTML = text;
+    //     let as = div.getElementsByTagName("a")
+    //     songs = []
     try {
-        const response = await fetch(`${folder}/`);
-        
-        // Check if response is successful (status 200-299)
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-    
+        // Add trailing slash and verify path
+        const normalizedFolder = folder.endsWith('/') ? folder : `${folder}/`;
+        const response = await fetch(normalizedFolder);
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
         const text = await response.text();
-        let div = document.createElement("div");
-        div.innerHTML = text;
-        let as = div.getElementsByTagName("a")
-        songs = []
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text, 'text/html');
+        const links = doc.querySelectorAll('a[href$=".mp3"]');
+
+        songs = Array.from(links).map(link => {
+            // Proper URL handling
+            const url = new URL(link.href, window.location.href);
+            return decodeURIComponent(url.pathname.split('/').pop());
+        });
         for (let index = 0; index < as.length; index++) {
             const element = as[index];
             if (element.href.endsWith(".mp3")) {
@@ -73,7 +90,6 @@ async function getSongs(folder) {
 
     } catch (error) {
         console.error('Error loading songs:', error);
-        // You can add user-facing error messages here
         alert('Failed to load songs. Please check your internet connection.');
     }
 
@@ -83,9 +99,9 @@ async function getSongs(folder) {
 //     currentSong.src = `${currFolder}/` + track
 function playMusic(track, pause = false) {
     const encodedTrack = encodeURIComponent(track);
-    
+
     const finalTrack = encodedTrack.replace(/%20/g, ' ');
-    
+
     currentSong.src = `${currFolder}/${finalTrack}`;
     if (!pause) {
         currentSong.play()
@@ -128,7 +144,7 @@ async function displayAlbums() {
         for (const album of albums) {
             const response = await fetch(`songs/${album.folder}/info.json`);
             const info = await response.json();
-            
+
             // Create card element
             const card = document.createElement("div");
             card.className = "card";
@@ -159,16 +175,14 @@ async function displayAlbums() {
 }
 
 async function main() {
-    // Get the list of the songs
-    await getSongs("songs/Softmusic")
-
-    // Add null check for songs array
-    if (songs && songs.length > 0) {
+    await getSongs("songs/Softmusic");
+    if (songs.length > 0) {
         playMusic(songs[0], true);
-        let currentSongIndex = songs.indexOf(currentSong.src.split("/").slice(-1)[0]);
+        // Initialize currentSongIndex here
+        let currentSongIndex = 0; // Direct index access is safer
     } else {
-        console.error("No songs found in the initial folder");
-        alert("No songs found in the selected playlist");
+        console.error("No songs found!");
+        document.querySelector(".songinfo").innerHTML = "No songs found in playlist";
     }
 
     // Display all the albums on the page
