@@ -22,6 +22,7 @@ function secondsToMinutesSeconds(seconds) {
 
 async function getSongs(folder) {
     try {
+        currFolder = folder;
         const normalizedFolder = folder.endsWith('/') ? folder : `${folder}/`;
         const response = await fetch(normalizedFolder);
 
@@ -38,7 +39,12 @@ async function getSongs(folder) {
         });
 
         // Show all the songs in the playlist
-        let songUL = document.querySelector(".songlist").getElementsByTagName("ul")[0]
+        // let songUL = document.querySelector(".songlist").getElementsByTagName("ul")[0]
+        let songUL = document.querySelector(".songlist ul");
+        if (!songUL) {
+            console.error("Song list container not found");
+            return;
+        }
         songUL.innerHTML = ""
         for (const song of songs) {
             songUL.innerHTML = songUL.innerHTML + `<li> <img class="invert" src="/Svg/music.svg" alt="">
@@ -69,25 +75,37 @@ async function getSongs(folder) {
 
 }
 
-// const playMusic = (track, pause = false) => {
-//     currentSong.src = `${currFolder}/` + track
 function playMusic(track, pause = false) {
-    const encodedTrack = encodeURIComponent(track);
-
-    const finalTrack = encodedTrack.replace(/%20/g, ' ');
-
-    currentSong.src = `${currFolder}/${finalTrack}`;
-    if (!pause) {
-        currentSong.play()
-        play.src = "/Svg/pause.svg"
+    if (!songs || songs.length === 0) {
+        console.error("No songs available to play");
+        return;
     }
-    document.querySelector(".songinfo").innerHTML = decodeURI(track)
-    document.querySelector(".songtime").innerHTML = "00:00 / 00:00"
+
+    const encodedTrack = encodeURIComponent(track);
+    const finalTrack = encodedTrack.replace(/%20/g, ' ');
+    const fullPath = `${currFolder}/${finalTrack}`;
+
+    // Verify file exists
+    fetch(fullPath)
+        .then(response => {
+            if (!response.ok) throw new Error("File not found");
+            currentSong.src = fullPath;
+            if (!pause) {
+                currentSong.play();
+                play.src = "/Svg/pause.svg";
+            }
+        })
+        .catch(error => {
+            console.error("Error loading audio:", error);
+            alert("Song file not found!");
+        });
+
+    document.querySelector(".songinfo").innerHTML = decodeURI(track);
+    document.querySelector(".songtime").innerHTML = "00:00 / 00:00";
 }
 
 async function displayAlbums() {
     try {
-        // Replace this with actual album data or create a manifest file
         const albums = [
             {
                 folder: "Softmusic",
@@ -116,32 +134,40 @@ async function displayAlbums() {
         cardContainer.innerHTML = ""; // Clear existing content
 
         for (const album of albums) {
-            const response = await fetch(`songs/${album.folder}/info.json`);
-            const info = await response.json();
+            try {
+                const response = await fetch(`songs/${encodeURIComponent(album.folder)}/info.json`);
+                if (!response.ok) throw new Error("Info.json not found");
+                const info = await response.json();
 
-            // Create card element
-            const card = document.createElement("div");
-            card.className = "card";
-            card.innerHTML = `
-                <div class="play">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none">
+                // Create card element
+                const card = document.createElement("div");
+                card.className = "card";
+                card.innerHTML = `
+                    <div class="play">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none">
 
-                    <circle cx="12" cy="12" r="10" fill="#1ed760" />
+                        <circle cx="12" cy="12" r="10" fill="#1ed760" />
 
-                    <polygon points="10 7 17 12 10 17 10 7" fill="#000000" />
+                        <polygon points="10 7 17 12 10 17 10 7" fill="#000000" />
 
-                    <circle cx="12" cy="12" r="100" stroke="#000000" stroke-width="1.5" />
-                    <path d="M15.4531 12.3948C15.3016 13.0215 14.5857 13.4644 13.1539 14.3502C11.7697 15.2064 11.0777 15.6346 10.5199 15.4625C10.2893 15.3913 10.0793 15.2562 9.90982 15.07C9.5 14.6198 9.5 13.7465 9.5 12C9.5 10.2535 9.5 9.38018 9.90982 8.92995C10.0793 8.74381 10.2893 8.60868 10.5199 8.53753C11.0777 8.36544 11.7697 8.79357 13.1539 9.64983C14.5857 10.5356 15.3016 10.9785 15.4531 11.6052C15.5156 11.8639 15.5156 12.1361 15.4531 12.3948Z" stroke="" stroke-width="1.5" stroke-linejoin="round" />
-                    </svg>
-                </div>
-                <img src="songs/${album.folder}/cover.jpg" alt="${info.title}">
-                <h2>${info.title}</h2>
-                <p>${info.description}</p>
-            `;
+                        <circle cx="12" cy="12" r="100" stroke="#000000" stroke-width="1.5" />
+                        <path d="M15.4531 12.3948C15.3016 13.0215 14.5857 13.4644 13.1539 14.3502C11.7697 15.2064 11.0777 15.6346 10.5199 15.4625C10.2893 15.3913 10.0793 15.2562 9.90982 15.07C9.5 14.6198 9.5 13.7465 9.5 12C9.5 10.2535 9.5 9.38018 9.90982 8.92995C10.0793 8.74381 10.2893 8.60868 10.5199 8.53753C11.0777 8.36544 11.7697 8.79357 13.1539 9.64983C14.5857 10.5356 15.3016 10.9785 15.4531 11.6052C15.5156 11.8639 15.5156 12.1361 15.4531 12.3948Z" stroke="" stroke-width="1.5" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <img src="songs/${encodeURIComponent(album.folder)}/cover.jpg" alt="${info.title}">
+                    <h2>${info.title}</h2>
+                    <p>${info.description}</p>
+                `;
 
-            card.addEventListener("click", () => getSongs(`songs/${album.folder}`));
-            cardContainer.appendChild(card);
+                    card.addEventListener("click", () => getSongs(`songs/${album.folder}`));
+                    cardContainer.appendChild(card);
+
+            } catch (error) {
+                console.error(`Error loading album ${album.folder}:`, error);
+            }
+
         }
+
     } catch (error) {
         console.error('Error loading albums:', error);
         alert('Failed to load albums');
@@ -150,7 +176,7 @@ async function displayAlbums() {
 
 async function main() {
     let currentSongIndex = -1; // Declare here for proper scoping
-    
+
     await getSongs("songs/Softmusic");
     if (songs && songs.length > 0) {
         playMusic(songs[0], true);
@@ -162,11 +188,14 @@ async function main() {
 
     async function verifyFiles() {
         try {
-            const testImage = await fetch('songs/Softmusic/cover.jpg');
+            const testImage = await fetch(`songs/${encodeURIComponent("Softmusic")}/cover.jpg`);
             if (!testImage.ok) throw new Error('Cover image missing');
             
-            const testSong = await fetch('songs/Softmusic/' + songs[0]);
-            if (!testSong.ok) throw new Error('First song missing');
+            if (songs.length > 0) {
+                const testSongPath = `songs/${encodeURIComponent("Softmusic")}/${encodeURIComponent(songs[0])}`;
+                const testSong = await fetch(testSongPath);
+                if (!testSong.ok) throw new Error('First song missing');
+            }
             
             console.log('All files verified');
         } catch (error) {
@@ -178,8 +207,6 @@ async function main() {
 
     // Display all the albums on the page
     displayAlbums()
-
-    // let currentSongIndex = songs.indexOf(currentSong.src.split("/").slice(-1)[0]);
 
     // Attach an event listener to play, next and previous
     play.addEventListener("click", () => {
