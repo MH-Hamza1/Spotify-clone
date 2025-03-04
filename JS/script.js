@@ -22,152 +22,88 @@ function secondsToMinutesSeconds(seconds) {
 
 async function getSongs(folder) {
     try {
-        currFolder = folder;
-        const normalizedFolder = folder.endsWith('/') ? folder : `${folder}/`;
-        const response = await fetch(normalizedFolder);
+        currFolder = `songs/${folder}`;
 
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        // Load from manifest instead of directory listing
+        const manifest = await fetch('/songs/manifest.json');
+        const data = await manifest.json();
 
-        const text = await response.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(text, 'text/html');
-        const links = doc.querySelectorAll('a[href$=".mp3"]');
+        const album = data.albums.find(a => a.folder === folder);
+        if (!album) throw new Error('Album not found');
 
-        songs = Array.from(links).map(link => {
-            const url = new URL(link.href, window.location.href);
-            return decodeURIComponent(url.pathname.split('/').pop());
+        songs = album.songs;
+
+        // Update song list display
+        const songUL = document.querySelector(".songlist ul");
+        songUL.innerHTML = songs.map(song => `
+        <li>
+          <img class="invert" src="/Svg/music.svg" alt="">
+          <div class="info">
+            <div>${song.replace('.mp3', '')}</div>
+            <div>Artist</div>
+          </div>
+          <div class="playnow">
+            <span>Play Now</span>
+            <img src="/Svg/play.svg" alt="">
+          </div>
+        </li>
+      `).join('');
+
+        // Attach event listeners
+        Array.from(songUL.children).forEach((e, index) => {
+            e.addEventListener("click", () => playMusic(songs[index]));
         });
-
-        // Show all the songs in the playlist
-        // let songUL = document.querySelector(".songlist").getElementsByTagName("ul")[0]
-        let songUL = document.querySelector(".songlist ul");
-        if (!songUL) {
-            console.error("Song list container not found");
-            return;
-        }
-        songUL.innerHTML = ""
-        for (const song of songs) {
-            songUL.innerHTML = songUL.innerHTML + `<li> <img class="invert" src="/Svg/music.svg" alt="">
-                                <div class="info">
-                                    <div> ${song.replaceAll("%20", " ")} </div>
-                                    <div>Artist</div>
-                                </div>
-                                <div class="playnow">
-                                    <span>Play Now</span>
-                                    <img src="/Svg/play.svg" alt="">
-                                </div></li>`;
-        }
-
-        // Update shuffledSongs array
-        shuffledSongs = songs.slice(); // Make a copy of the original array
-
-        // Attach an event listener to each song
-        Array.from(document.querySelector(".songlist").getElementsByTagName("li")).forEach(e => {
-            e.addEventListener("click", element => {
-                playMusic(e.querySelector(".info").firstElementChild.innerHTML.trim())
-            })
-        })
 
     } catch (error) {
         console.error('Error loading songs:', error);
-        alert('Failed to load songs. Please check your internet connection.');
+        alert('Failed to load songs. Please check the playlist');
     }
-
 }
 
 function playMusic(track, pause = false) {
-    if (!songs || songs.length === 0) {
-        console.error("No songs available to play");
-        return;
+    const encodedTrack = encodeURIComponent(track);
+    currentSong.src = `/${currFolder}/${encodedTrack}`;
+
+    if (!pause) {
+        currentSong.play().catch(error => {
+            console.error('Playback failed:', error);
+            alert('Error playing audio. Please check the file format.');
+        });
+        play.src = "/Svg/pause.svg";
     }
 
-    const encodedTrack = encodeURIComponent(track);
-    const finalTrack = encodedTrack.replace(/%20/g, ' ');
-    const fullPath = `${currFolder}/${finalTrack}`;
-
-    // Verify file exists
-    fetch(fullPath)
-        .then(response => {
-            if (!response.ok) throw new Error("File not found");
-            currentSong.src = fullPath;
-            if (!pause) {
-                currentSong.play();
-                play.src = "/Svg/pause.svg";
-            }
-        })
-        .catch(error => {
-            console.error("Error loading audio:", error);
-            alert("Song file not found!");
-        });
-
-    document.querySelector(".songinfo").innerHTML = decodeURI(track);
-    document.querySelector(".songtime").innerHTML = "00:00 / 00:00";
+    document.querySelector(".songinfo").textContent = track.replace('.mp3', '');
+    document.querySelector(".songtime").textContent = "00:00 / 00:00";
 }
 
 async function displayAlbums() {
     try {
-        const albums = [
-            {
-                folder: "Softmusic",
-                title: "Soft Music",
-                description: "Relaxing tunes"
-            },
-            {
-                folder: "Recharge",
-                title: "Recharge",
-                description: "Active"
-            },
-            {
-                folder: "Memories",
-                title: "Memories",
-                description: "Good vibes"
-            },
-            {
-                folder: "Lovely songs",
-                title: "Lovely songs",
-                description: "Feel good"
-            }
-            // Add more albums as needed
-        ];
+        const manifest = await fetch('/songs/manifest.json');
+        const data = await manifest.json();
 
-        let cardContainer = document.querySelector(".cardContainer");
-        cardContainer.innerHTML = ""; // Clear existing content
+        const cardContainer = document.querySelector(".cardContainer");
+        cardContainer.innerHTML = '';
 
-        for (const album of albums) {
-            try {
-                const response = await fetch(`songs/${encodeURIComponent(album.folder)}/info.json`);
-                if (!response.ok) throw new Error("Info.json not found");
-                const info = await response.json();
+        for (const album of data.albums) {
+            const card = document.createElement("div");
+            card.className = "card";
+            card.innerHTML = `
+          <div class="play">
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" fill="#1ed760" />
+            <polygon points="10 7 17 12 10 17 10 7" fill="#000000" />
+            <circle cx="12" cy="12" r="100" stroke="#000000" stroke-width="1.5" />
+            <path d="M15.4531 12.3948C15.3016 13.0215 14.5857 13.4644 13.1539 14.3502C11.7697 15.2064 11.0777 15.6346 10.5199 15.4625C10.2893 15.3913 10.0793 15.2562 9.90982 15.07C9.5 14.6198 9.5 13.7465 9.5 12C9.5 10.2535 9.5 9.38018 9.90982 8.92995C10.0793 8.74381 10.2893 8.60868 10.5199 8.53753C11.0777 8.36544 11.7697 8.79357 13.1539 9.64983C14.5857 10.5356 15.3016 10.9785 15.4531 11.6052C15.5156 11.8639 15.5156 12.1361 15.4531 12.3948Z" stroke="" stroke-width="1.5" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <img src="/songs/${album.folder}/${album.cover}" alt="${album.info.title}">
+          <h2>${album.info.title}</h2>
+          <p>${album.info.description}</p>
+        `;
 
-                // Create card element
-                const card = document.createElement("div");
-                card.className = "card";
-                card.innerHTML = `
-                    <div class="play">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none">
-
-                        <circle cx="12" cy="12" r="10" fill="#1ed760" />
-
-                        <polygon points="10 7 17 12 10 17 10 7" fill="#000000" />
-
-                        <circle cx="12" cy="12" r="100" stroke="#000000" stroke-width="1.5" />
-                        <path d="M15.4531 12.3948C15.3016 13.0215 14.5857 13.4644 13.1539 14.3502C11.7697 15.2064 11.0777 15.6346 10.5199 15.4625C10.2893 15.3913 10.0793 15.2562 9.90982 15.07C9.5 14.6198 9.5 13.7465 9.5 12C9.5 10.2535 9.5 9.38018 9.90982 8.92995C10.0793 8.74381 10.2893 8.60868 10.5199 8.53753C11.0777 8.36544 11.7697 8.79357 13.1539 9.64983C14.5857 10.5356 15.3016 10.9785 15.4531 11.6052C15.5156 11.8639 15.5156 12.1361 15.4531 12.3948Z" stroke="" stroke-width="1.5" stroke-linejoin="round" />
-                        </svg>
-                    </div>
-                    <img src="songs/${encodeURIComponent(album.folder)}/cover.jpg" alt="${info.title}">
-                    <h2>${info.title}</h2>
-                    <p>${info.description}</p>
-                `;
-
-                    card.addEventListener("click", () => getSongs(`songs/${album.folder}`));
-                    cardContainer.appendChild(card);
-
-            } catch (error) {
-                console.error(`Error loading album ${album.folder}:`, error);
-            }
-
+            card.addEventListener("click", () => getSongs(album.folder));
+            cardContainer.appendChild(card);
         }
-
     } catch (error) {
         console.error('Error loading albums:', error);
         alert('Failed to load albums');
@@ -190,13 +126,13 @@ async function main() {
         try {
             const testImage = await fetch(`songs/${encodeURIComponent("Softmusic")}/cover.jpg`);
             if (!testImage.ok) throw new Error('Cover image missing');
-            
+
             if (songs.length > 0) {
                 const testSongPath = `songs/${encodeURIComponent("Softmusic")}/${encodeURIComponent(songs[0])}`;
                 const testSong = await fetch(testSongPath);
                 if (!testSong.ok) throw new Error('First song missing');
             }
-            
+
             console.log('All files verified');
         } catch (error) {
             console.error('File verification failed:', error);
