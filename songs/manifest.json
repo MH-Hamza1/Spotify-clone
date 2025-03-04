@@ -1,0 +1,22 @@
+{
+    "albums": [
+      {
+        "folder": "Softmusic",
+        "cover": "cover.jpg",
+        "songs": ["song1.mp3", "song2.mp3"],
+        "info": {
+          "title": "Soft Music",
+          "description": "Relaxing tunes"
+        }
+      },
+      {
+        "folder": "Recharge",
+        "cover": "cover.jpg",
+        "songs": ["track1.mp3", "track2.mp3"],
+        "info": {
+          "title": "Recharge",
+          "description": "Active"
+        }
+      }
+    ]
+  }
