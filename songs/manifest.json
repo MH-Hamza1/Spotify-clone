@@ -23,7 +23,7 @@
         "cover": "cover.jpg",
         "songs": ["Isabel LaRosa.mp3", "Let Me Down Slowly.mp3", "Mood cute voice.mp3", "Ride it.mp3", "ruth b. - dandelions.mp3"],
         "info": {
-          "title": "Good Vibes",
+          "title": "Lovely songs",
           "description": "Good vibes"
         }
       },
@@ -32,8 +32,8 @@
         "cover": "cover.jpg",
         "songs": ["Dil Ko Karaar Aaya.mp3", "Kaun Tujhe.mp3", "Sun Saathiya.mp3"],
         "info": {
-          "title": "Good Time",
-          "description": "Memories"
+          "title": "Memories",
+          "description": "Good Times"
         }
       }
     ]
