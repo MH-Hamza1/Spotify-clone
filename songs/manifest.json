@@ -2,7 +2,7 @@
     "albums": [
       {
         "folder": "Softmusic",
-        "cover": "cover.jpg",
+        "cover": "Cover.jpg",
         "songs": ["I've got my eye on you.mp3", "Cardigan - Taylor Swift.mp3", "Ludovico Einaudi Experience.mp3", "snowfall - oneheart x reidenshi.mp3"],
         "info": {
           "title": "Soft Music",
@@ -11,7 +11,7 @@
       },
       {
         "folder": "Recharge",
-        "cover": "cover.jpg",
+        "cover": "Cover.jpg",
         "songs": ["People You Know x Starboy.mp3", "AFTER HOURS.mp3", "Dance Monkey.mp3", "Under The Influence.mp3", "voj narvent - memory reboot.mp3"],
         "info": {
           "title": "Recharge",
@@ -20,7 +20,7 @@
       },
       {
         "folder": "Lovely songs",
-        "cover": "cover.jpg",
+        "cover": "Cover.jpg",
         "songs": ["Isabel LaRosa.mp3", "Let Me Down Slowly.mp3", "Mood cute voice.mp3", "Ride it.mp3", "ruth b. - dandelions.mp3"],
         "info": {
           "title": "Lovely songs",
@@ -29,7 +29,7 @@
       },
       {
         "folder": "Memories",
-        "cover": "cover.jpg",
+        "cover": "Cover.jpg",
         "songs": ["Dil Ko Karaar Aaya.mp3", "Kaun Tujhe.mp3", "Sun Saathiya.mp3"],
         "info": {
           "title": "Memories",
