@@ -14,6 +14,10 @@ body {
     color: white;
     background-color: black;
 }
+
+.container{
+    height: 100%;
+}
  
 .left {
     width: 25vw;
@@ -211,17 +215,17 @@ body {
 }
 
 .playbar {
-    position: fixed;
+    position: absolute;
     bottom: 30px;
-    width: 95%;
-    background-color: #3b3b3bdc;
-    border-radius: 50px;
+    width: 100%;
+    background-color: #3b3b3ba9;
+    border-radius: 15px;
     padding: 12px;
-    width: 66vw;
+    width: 68vw;
     min-height: 40px;
     align-items: center;
     justify-content: center;
-    right: 70px;
+    right: 25px;
 }
 
 .songbuttons {
@@ -232,7 +236,7 @@ body {
 }
 
 .songlist {
-    height: 444px ;
+    height: 350px ;
     overflow: auto;
     margin-bottom: 44px;
 }
@@ -302,6 +306,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 30px;
+    margin-bottom: 5px;
 }
 
 .songinfo{
@@ -313,18 +319,18 @@ body {
 }
 
 .volume {
-    width: 150px;
+    width: 100px;
     display: flex;
     gap: 10px;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    padding: 10px;
+    padding: 10px 5px;
 }
 
 .range input {
     cursor: pointer;
-    accent-color: #db15e2;
+    accent-color: #0f9e16;
 }
 
 .mainbar {
@@ -388,7 +394,7 @@ body {
     
     .right{
         width: 100vw; 
-        height: 130vw;
+        height: 130vh;
         margin: 0;
         border-radius: 0;
     }
@@ -462,9 +468,11 @@ body {
     }
 
     .playbar {
-        border-radius: 20px;
-        opacity: 0.9;
+        border-radius: 10px;
+        position: fixed;
         right: auto;
+        backdrop-filter: blur(4px);
+        background-color: rgba(8, 4, 17, 0.24);
     }
 
     .playbar {
@@ -522,12 +530,7 @@ body {
 
     .timevol {
         padding-bottom: 0;
-    }
-
-    .mainbar {
-        padding: 0;
-        margin: 10px;
-        gap: 12px;
+        gap: 40px;
     }
 
 }
