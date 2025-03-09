@@ -33,7 +33,6 @@ async function getSongs(folder) {
 
         songs = album.songs;
 
-        // Update song list display
         const songUL = document.querySelector(".songlist ul");
         songUL.innerHTML = songs.map(song => `
         <li>
@@ -62,18 +61,20 @@ async function getSongs(folder) {
 
 function playMusic(track, pause = false) {
     const encodedTrack = encodeURIComponent(track);
-    currentSong.src = `/${currFolder}/${encodedTrack}`;
+    const finalTrack = encodedTrack.replace(/%20/g, ' ');
+    currentSong.src = `${currFolder}/${finalTrack}`;
+    
+    // Update current index
+    currentSongIndex = songs.findIndex(song => 
+        decodeURIComponent(song) === decodeURIComponent(track)
+    );
 
     if (!pause) {
-        currentSong.play().catch(error => {
-            console.error('Playback failed:', error);
-            alert('Error playing audio. Please check the file format.');
-        });
+        currentSong.play();
         play.src = "/Svg/pause.svg";
     }
-
-    document.querySelector(".songinfo").textContent = track.replace('.mp3', '');
-    document.querySelector(".songtime").textContent = "00:00 / 00:00";
+    document.querySelector(".songinfo").innerHTML = decodeURI(track);
+    document.querySelector(".songtime").innerHTML = "00:00 / 00:00";
 }
 
 async function displayAlbums() {
@@ -234,16 +235,25 @@ async function main() {
 
     // Add an event listener for shuffle
     shuffle.addEventListener("click", () => {
-        console.log("Shuffle clicked");
-
-        // Toggle shuffle functionality
         isShuffleEnabled = !isShuffleEnabled;
         shuffle.src = isShuffleEnabled ? "/Svg/shufflegreen.svg" : "/Svg/shuffle.svg";
-
+    
         if (isShuffleEnabled) {
-            shuffleArray(songs);
+            // Preserve current song as first in shuffled list
+            const currentSongName = songs[currentSongIndex];
+            shuffledSongs = shuffleArray([...songs]);
+            const currentIndex = shuffledSongs.indexOf(currentSongName);
+            [shuffledSongs[0], shuffledSongs[currentIndex]] = 
+                [shuffledSongs[currentIndex], shuffledSongs[0]];
+            songs = shuffledSongs;
+            currentSongIndex = 0;
+        } else {
+            // Restore original order while maintaining current song
+            const currentSongName = songs[currentSongIndex];
+            songs = [...shuffledSongs];
+            currentSongIndex = songs.indexOf(currentSongName);
         }
-    })
+    });
 
     // Listen for the 'ended' event on the audio element
     currentSong.addEventListener('ended', () => {
@@ -270,16 +280,18 @@ async function main() {
                 currentSongIndex = -1;
             }
         }
-    })
+    });
 
 }
 
 // Function to shuffle an array
 function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
+    return shuffled;
 }
 
 // Function to get a random index for shuffle
@@ -287,34 +299,43 @@ function getRandomIndex() {
     return Math.floor(Math.random() * songs.length);
 }
 
-
-// Add an event listener to previous
 previous.addEventListener("click", () => {
-    console.log("Previous clicked")
-    let index = songs.indexOf(currentSong.src.split("/").slice(-1)[0])
-    if ((index - 1) > 0) {
-        playMusic(songs[index - 1])
-    }
-})
+    if (songs.length === 0) return;
 
-// Add an event listener to next
+    let index = songs.findIndex(song =>
+        decodeURIComponent(song) === decodeURIComponent(currentSong.src.split('/').pop())
+    );
+
+    if (index === -1) index = currentSongIndex;
+
+    const newIndex = (index - 1 + songs.length) % songs.length;
+    currentSongIndex = newIndex;
+    playMusic(songs[newIndex]);
+});
+
 next.addEventListener("click", () => {
-    console.log("Next clicked")
-    let index = songs.indexOf(currentSong.src.split("/").slice(-1)[0])
-    if ((index + 1) < songs.length) {
-        playMusic(songs[index + 1])
-    }
-})
+    if (songs.length === 0) return;
+
+    let index = songs.findIndex(song =>
+        decodeURIComponent(song) === decodeURIComponent(currentSong.src.split('/').pop())
+    );
+
+    if (index === -1) index = currentSongIndex;
+
+    const newIndex = (index + 1) % songs.length;
+    currentSongIndex = newIndex;
+    playMusic(songs[newIndex]);
+});
 
 // Add an event listener to volume
 document.querySelector(".range").getElementsByTagName("input")[0].addEventListener("change", (e) => {
-    console.log("Setting volume to", e.target.value, "/100")
+    console.log("Setting volume to", e.target.value, "/100");
     currentSong.volume = parseInt(e.target.value) / 100
     if (currentSong.volume > 0) {
         document.querySelector(".volume>img").src = document.querySelector(".volume>img").src.replace
             ("Svg/mute.svg", "Svg/volume.svg")
     }
-})
+});
 
 // Add event listener to mute the track
 document.querySelector(".volume>img").addEventListener("click", e => {
